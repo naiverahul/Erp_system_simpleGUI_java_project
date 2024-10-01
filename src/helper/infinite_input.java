@@ -1,7 +1,9 @@
+package helper;
+
 import javax.swing.JOptionPane;
 
 public class infinite_input {
-    protected static int loop_input() {
+    public static int loop_input() {
         boolean flag = true;
         int ans = 0;
 

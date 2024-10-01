@@ -1,5 +1,10 @@
+package admin;
+
+
+import student.*;
+import helper.*;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.JOptionPane;
 
 public class Student_list {
@@ -37,7 +42,8 @@ public class Student_list {
             String password = JOptionPane.showInputDialog("Enter Password:");
             if(password == null) return;
             Course_catalog courseCatalog = admin.getCourseCatalog();
-            int sem = Integer.parseInt(JOptionPane.showInputDialog("Enter semester of this student:"));
+            JOptionPane.showMessageDialog(null,"Enter semester of this student:");
+            int sem = infinite_input.loop_input();
             Student new_student = new Student(name, email, password, courseCatalog, sem);
             student_list.add(new_student);
             JOptionPane.showMessageDialog(null, "Student successfully added!");
@@ -76,14 +82,17 @@ public class Student_list {
                         String name = JOptionPane.showInputDialog("Enter student name:");
                         if (name == null) {return;}
                         s.setName(name);
+                        break;
                     case 1 :
                         String email_id = JOptionPane.showInputDialog("Enter student new email:");
                         if (email_id == null) {return;}
                         s.setEmail(email_id);
+                        break;
                     case 2 :
                         String password = JOptionPane.showInputDialog("Enter student new password:");
                         if (password == null) {return;}
                         s.setPassword(password);
+                        break;
                     case 3 : {
                         String courseCode = JOptionPane.showInputDialog("Enter course code to remove:");
                         if (courseCode == null) {return;}
@@ -100,11 +109,14 @@ public class Student_list {
                             JOptionPane.showMessageDialog(null, "Course not found.");
                         }
                     }
+                    break;
                     case 4 : {
-                        int sem = Integer.parseInt(JOptionPane.showInputDialog("Enter new semester:"));
+                        JOptionPane.showMessageDialog(null,"Enter new semester:");
+                        int sem = infinite_input.loop_input();
                         s.setSemester(sem);
                         break;
                     }
+
                     case 5 :
                         exit = true;
                     default :
@@ -133,7 +145,7 @@ public class Student_list {
         if (student != null) {
             while (true) {
                 String code = JOptionPane.showInputDialog("Enter course code to assign grade (or type 'exit' to cancel):");
-                if (code.equalsIgnoreCase("exit")) {
+                if (code.equalsIgnoreCase("exit")|| code == null) {
                     JOptionPane.showMessageDialog(null, "Grade assignment cancelled.");
                     break;
                 }
@@ -156,12 +168,19 @@ public class Student_list {
                     student.getCourses().remove(courseToGrade);
                     if (!grade.equals("F")) {
                         student.getCompleted_courses().add(courseToGrade);
+                        student.setNo_completed_courses(student.getNo_completed_courses()+1);
                     }
                     JOptionPane.showMessageDialog(null, "Grade " + grade + " assigned for course " + code);
+                    if(student.getCourses().isEmpty()){
+                        int sem = student.getSemester();
+                        student.setSemester(sem+1);
+                    }
                     break;
                 } else {
                     JOptionPane.showMessageDialog(null, "Course not found.");
+                    break;
                 }
+
             }
         } else {
             JOptionPane.showMessageDialog(null, "Student not found.");
@@ -201,7 +220,8 @@ public class Student_list {
     public void change_sem(){
         for(Student s : student_list){
             int sem = s.getSemester();
-            sem = sem + (int)(s.getCompleted_courses().size()/5);
+            sem = sem+1;
+            s.setSemester(sem);
         }
     }
 

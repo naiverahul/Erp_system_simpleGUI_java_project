@@ -1,4 +1,7 @@
+package helper;
+
 import javax.swing.JOptionPane;
+import exceptions.InvalidLoginExcepiton;
 
 public abstract class User {
     private String name;
@@ -35,26 +38,33 @@ public abstract class User {
         this.password = password;
     }
 
-    public boolean login() {
+    public boolean login() throws InvalidLoginExcepiton {
         boolean flag = true;
         int attemptsLeft = 4;
 
         while (flag) {
             String inputEmail = JOptionPane.showInputDialog("Enter your email to login:");
-            if(inputEmail == null) {return false;}
-            String inputPassword = JOptionPane.showInputDialog("Enter your password:");
-            if(inputPassword == null) {return false;}
-
-            if (inputEmail != null && inputPassword != null && inputEmail.equals(this.email) && inputPassword.equals(this.password)) {
-                return true;
+            if (inputEmail == null) {
+                return false;
             }
 
+            String inputPassword = JOptionPane.showInputDialog("Enter your password:");
+            if (inputPassword == null) {
+                return false;
+            }
+
+            if (inputEmail.equals(this.email) && inputPassword.equals(this.password)) {
+                return true;  // Successful login
+            }
+
+            // Decrease attempts and notify user
             if (attemptsLeft > 0) {
                 JOptionPane.showMessageDialog(null, "Incorrect email or password. You have " + attemptsLeft + " attempts left. Please try again.");
                 --attemptsLeft;
             } else {
-                JOptionPane.showMessageDialog(null, "Incorrect email or password. You've exceeded the maximum number of attempts. Contact Rahul.");
                 flag = false;
+                // Exceeded attempts, throw InvalidLoginException
+                throw new InvalidLoginExcepiton("Exceeded maximum login attempts. Contact Rahul.");
             }
         }
 

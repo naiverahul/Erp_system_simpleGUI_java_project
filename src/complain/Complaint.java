@@ -1,3 +1,11 @@
+package complain;
+
+
+import student.*;
+
+
+
+
 public class Complaint {
     private String complaint;
     private boolean pending;
@@ -6,7 +14,7 @@ public class Complaint {
     private int complaint_id;
     private String remarks;
 
-    public Complaint(String complaint ,Student student,int complaint_id) {
+    public Complaint(String complaint , Student student, int complaint_id) {
         this.complaint = complaint;
         this.pending = true;
         this.resolved = false;

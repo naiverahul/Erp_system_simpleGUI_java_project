@@ -1,3 +1,7 @@
+package student;
+
+import course.Course;
+
 public class StudentCourse {
     private Course course;
     private String grade;

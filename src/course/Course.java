@@ -1,10 +1,17 @@
+package course;
+
+
+import Proff.*;
+import admin.TA_list;
+
+
 import javax.swing.JOptionPane;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import feedback.Feedback;
 
-class Course {
+public class Course {
     private String title;
     private String code;
     private Professor proff;
@@ -16,6 +23,9 @@ class Course {
     private int enrollment_limit;
     private String location;
     private int no_of_student;
+    private TA_list ta_list;
+    private ArrayList<Feedback<?>> feedback;
+    private boolean DropDeadlinePassed;
 
 
 
@@ -30,7 +40,9 @@ class Course {
         this.enrollment_limit = enrollment_limit;
         this.location = location;
         this.no_of_student = 0;
-
+        this.ta_list = new TA_list();
+        this.feedback = new ArrayList<>();
+        this.DropDeadlinePassed = false;
     }
 
     public String getTitle() {
@@ -133,5 +145,56 @@ class Course {
     public void setlocation(String location){
         this.location = location;
     }
+    public TA_list getTA_list() {return ta_list;}
+    public void setTA_list(TA_list ta_list) {this.ta_list = ta_list;}
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public int getNo_of_student() {
+        return no_of_student;
+    }
+
+    public void setNo_of_student(int no_of_student) {
+        this.no_of_student = no_of_student;
+    }
+
+    public TA_list getTa_list() {
+        return ta_list;
+    }
+
+    public void setTa_list(TA_list ta_list) {
+        this.ta_list = ta_list;
+    }
+
+    public ArrayList<Feedback<?>> getFeedbackMap() {
+        return feedback;
+    }
+
+    public void setFeedbackMap(ArrayList<Feedback<?>> feedbackMap) {
+        this.feedback = feedbackMap;
+    }
+    public void addFeedback(Feedback<?> feedbackItem) {
+        feedback.add(feedbackItem);
+    }
+    public ArrayList<Feedback<?>> getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(ArrayList<Feedback<?>> feedback) {
+        this.feedback = feedback;
+    }
+
+    public boolean isDropDeadlinePassed() {
+        return DropDeadlinePassed;
+    }
+
+    public void setDropDeadlinePassed(boolean dropDeadlinePassed) {
+        DropDeadlinePassed = dropDeadlinePassed;
+    }
 }

@@ -1,3 +1,11 @@
+package admin;
+
+import course.*;
+import student.*;
+import Proff.*;
+import helper.*;
+import complain.*;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,9 +48,9 @@ public class Professor_list {
             if(department == null) {return;}
             Professor newProfessor = new Professor(name, email, password, department);
             professorList.add(newProfessor);
-            JOptionPane.showMessageDialog(null, "Professor " + name + " added successfully.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor " + name + " added successfully.");
         } else {
-            JOptionPane.showMessageDialog(null, "Professor already exists.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor already exists.");
         }
     }
 
@@ -54,7 +62,7 @@ public class Professor_list {
             Iterator<Professor> iterator = this.professorList.iterator();
             while (iterator.hasNext()) {
                 Professor p = iterator.next();
-                output.append("Professor name: ").append(p.getName())
+                output.append("Proff.Professor name: ").append(p.getName())
                         .append(", email: ").append(p.getEmail())
                         .append(", courses: ").append(p.coursenamelist()).append("\n");
             }
@@ -64,16 +72,19 @@ public class Professor_list {
 
     public void updateProfessor() {
         String email = JOptionPane.showInputDialog("Enter professor email:");
+        if (email == null || email.isEmpty()) {
+            return;
+        }
         Professor p = findProfessorByEmail(email);
         if (p == null) {
-            JOptionPane.showMessageDialog(null, "Professor does not exist.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor does not exist.");
         } else {
-            JOptionPane.showMessageDialog(null, "Professor name: " + p.getName() + ", email: " + p.getEmail());
+            JOptionPane.showMessageDialog(null, "Proff.Professor name: " + p.getName() + ", email: " + p.getEmail());
 
             String[] options = {"Change Name", "Change Email", "Change Password", "Exit"};
             boolean exit = false;
             while (!exit) {
-                int x = JOptionPane.showOptionDialog(null, "Select an option to update", "Update Professor",
+                int x = JOptionPane.showOptionDialog(null, "Select an option to update", "Update Proff.Professor",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                         null, options, options[0]);
                 switch (x) {
@@ -111,10 +122,10 @@ public class Professor_list {
         if (email == null) {return;}
         Professor p = findProfessorByEmail(email);
         if (p == null) {
-            JOptionPane.showMessageDialog(null, "Professor does not exist.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor does not exist.");
         } else {
             professorList.remove(p);
-            JOptionPane.showMessageDialog(null, "Professor " + p.getName() + " successfully deleted.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor " + p.getName() + " successfully deleted.");
         }
     }
 
@@ -123,11 +134,11 @@ public class Professor_list {
         if (email == null) {return;}
         Professor p = findProfessorByEmail(email);
         if (p == null) {
-            JOptionPane.showMessageDialog(null, "Professor does not exist.");
+            JOptionPane.showMessageDialog(null, "Proff.Professor does not exist.");
             return;
         }
         course.setProff(p);
         p.getCourses().add(course);
-        JOptionPane.showMessageDialog(null, "Professor " + p.getName() + " successfully assigned to the course.");
+        JOptionPane.showMessageDialog(null, "Proff.Professor " + p.getName() + " successfully assigned to the course.");
     }
 }

@@ -1,15 +1,28 @@
+package student;
+
+import admin.Administrator;
+import admin.Course_catalog;
+import complain.Complaint;
+import course.Course;
+import exceptions.*;
+import feedback.Feedback;
+import helper.User;
+import helper.common;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
 
-class Student extends User implements common {
+public class Student extends User implements common {
     private ArrayList<StudentCourse> courses;
     private Course_catalog course_catalog;
     private ArrayList<StudentCourse> completed_courses;
     private HashMap<Integer, Float> SGPA;
     private int semester;
     private int Credit;
+    private int no_completed_courses;
+    private boolean isTA;
 
     public Student(String name, String email, String password, Course_catalog course_catalog, int semester) {
         super(name, email, password);
@@ -19,6 +32,20 @@ class Student extends User implements common {
         this.SGPA = new HashMap<>();
         this.Credit = 20;
         this.semester = semester;
+        this.no_completed_courses = 0;
+        this.isTA = false;
+    }
+
+    public Student(String name, String email, String password, ArrayList<StudentCourse> courses, Course_catalog course_catalog, ArrayList<StudentCourse> completed_courses, HashMap<Integer, Float> SGPA, int semester, int credit, int no_completed_courses, boolean isTA) {
+        super(name, email, password);
+        this.courses = courses;
+        this.course_catalog = course_catalog;
+        this.completed_courses = completed_courses;
+        this.SGPA = SGPA;
+        this.semester = semester;
+        this.Credit = credit;
+        this.no_completed_courses = no_completed_courses;
+        this.isTA = isTA;
     }
 
     public ArrayList<StudentCourse> getCourses() { return this.courses; }
@@ -31,6 +58,12 @@ class Student extends User implements common {
     public void setSGPA(HashMap<Integer, Float> SGPA) { this.SGPA = SGPA; }
     public int getSemester() { return semester; }
     public void setSemester(int semester) { this.semester = semester; }
+    public int getCredit() { return Credit; }
+    public void setCredit(int Credit) { this.Credit = Credit; }
+    public int getNo_completed_courses() { return no_completed_courses; }
+    public void setNo_completed_courses(int n) { this.no_completed_courses = n; }
+    public boolean isTA() { return isTA; }
+    public void setTA(boolean TA) { this.isTA = TA; }
 
     @Override
     public ArrayList<Course> get_preeq(Course course) {
@@ -107,38 +140,38 @@ class Student extends User implements common {
         }
     }
 
-    public void enroll_in_course(String courseCode) {
+    public void enroll_in_course(String courseCode) throws CourseFullException, PrerequisiteNotMetException, DuplicateEnrollmentException, CreditLimitExceededException {
         try {
             Course course1 = course_catalog.get_course_by_code(courseCode);
-//            Course newcourse = course.deepclone();
             StudentCourse course = new StudentCourse(course1);
+
             if (course != null) {
-                if (course.getCourse().getCredits() <= this.Credit) {
-                    boolean satisfied = true;
-                    for (Course c : course.getCourse().getPrereq()) {
-                        if (!completed_courses.contains(c)) {
-                            JOptionPane.showMessageDialog(null, "Prerequisites not satisfied.");
-                            satisfied = false;
-                            break;
-                        }
-                        for(StudentCourse c1 : courses){
-                            if(courseCode.equalsIgnoreCase(c1.getCourse().getCode())){
-                                JOptionPane.showMessageDialog(null, "Already Enrolled in the course");
-                                satisfied = false;
-                                break;
-                            }
-                        }
-                        if(course.getCourse().getno_of_student() > course.getCourse().getEnrollment_limit() ){
-                            satisfied = false;
-                        }
-                    }
-                    if (satisfied) {
-                        courses.add(course);
-                        JOptionPane.showMessageDialog(null, "Course added to the list.");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Credits limit exceeded.");
+                if (course.getCourse().getCredits() > this.Credit) {
+                    throw new CreditLimitExceededException("Credits limit exceeded.");
                 }
+
+                // Check prerequisites
+                for (Course prereq : course.getCourse().getPrereq()) {
+                    if (!completed_courses.contains(prereq)) {
+                        throw new PrerequisiteNotMetException("Prerequisites not satisfied.");
+                    }
+                }
+
+                // Check if already enrolled
+                for (StudentCourse enrolledCourse : courses) {
+                    if (courseCode.equalsIgnoreCase(enrolledCourse.getCourse().getCode())) {
+                        throw new DuplicateEnrollmentException("Already enrolled in the course.");
+                    }
+                }
+
+                // Check if course is full
+                if (course.getCourse().getno_of_student() >= course.getCourse().getEnrollment_limit()) {
+                    throw new CourseFullException("Course is full.");
+                }
+
+                // If all conditions are satisfied, add the course
+                courses.add(course);
+                JOptionPane.showMessageDialog(null, "Course added to the list.");
             } else {
                 JOptionPane.showMessageDialog(null, "Course not found.");
             }
@@ -146,6 +179,7 @@ class Student extends User implements common {
             JOptionPane.showMessageDialog(null, "An error occurred while enrolling in the course: " + e.getMessage());
         }
     }
+
 
     public void view_enrolled_course() {
         try {
@@ -180,6 +214,7 @@ class Student extends User implements common {
     }
     public void view_grade(){
         String coursecode = JOptionPane.showInputDialog("Enter the course code  to view grade:");
+        if(coursecode == null) return;
         boolean courseFound = false;
         for(StudentCourse c: this.completed_courses){
             if(coursecode.equalsIgnoreCase(c.getCourse().getCode())){
@@ -227,13 +262,16 @@ class Student extends User implements common {
         }
     }
 
-    public void drop_course() {
+    public void drop_course() throws DropDeadlinePassedException {
         String courseCode = JOptionPane.showInputDialog("Enter course code to drop:");
         try {
             boolean courseRemoved = false;
             for (StudentCourse c : this.courses) {
                 if (c.getCourse().getCode().equalsIgnoreCase(courseCode)) {
                     c.setGrade("W");
+                    if(c.getCourse().isDropDeadlinePassed()){
+                        throw new DropDeadlinePassedException("The deadline to drop the course is  passed. Now suffer!!");
+                    }
                     courses.remove(c);
                     JOptionPane.showMessageDialog(null, "Removed " + c.getCourse().getTitle() + ". Grade set to W.");
                     courseRemoved = true;
@@ -256,7 +294,7 @@ class Student extends User implements common {
                 Student s = admin.getStudentList().find_student_by_email(this.getEmail());
                 Complaint com = new Complaint(complaint, s, com_id);
                 admin.getcomplaints().add(com);
-                JOptionPane.showMessageDialog(null, "Complaint registered with complaint_id " + com_id);
+                JOptionPane.showMessageDialog(null, "complain.Complaint registered with complaint_id " + com_id);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "An error occurred while adding the complaint: " + e.getMessage());
@@ -298,7 +336,7 @@ class Student extends User implements common {
                     }
                 }
                 if (!complaintFound) {
-                    JOptionPane.showMessageDialog(null, "Complaint ID not found.");
+                    JOptionPane.showMessageDialog(null, "complain.Complaint ID not found.");
                 }
             }
         } catch (Exception e) {
@@ -323,5 +361,69 @@ class Student extends User implements common {
     public void show_timetable(){
         String courseCode = JOptionPane.showInputDialog("Enter course code to view timetable:");
 
+    }
+
+    public Course find_course_using_code(String code){
+        Course course = null;
+        for(StudentCourse c: this.courses){
+            if(c.getCourse().getCode().equalsIgnoreCase(code)){
+                course = c.getCourse();
+            }
+        }
+        return course;
+    }
+
+
+    public void give_feedback() {
+        String[] feedoption = {"Rate the course", "Add comment", "Exit"};
+        int feedChoice = JOptionPane.showOptionDialog(null, "Feedback Menu", "Select an option",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, feedoption, feedoption[0]);
+
+        String code = JOptionPane.showInputDialog("Enter course code:");
+        if(code == null) return;
+        Course course = find_course_using_code(code);
+
+        if (course != null) {
+            switch (feedChoice) {
+                case 0: // Rate the course
+                    String ratingStr = JOptionPane.showInputDialog("Enter your rating (1-5):");
+                    if(ratingStr == null) return;
+                    try {
+                        int rating = Integer.parseInt(ratingStr);
+                        if (rating >= 1 && rating <= 5) {
+                            Feedback<Integer> feedbackRating = new Feedback<>();
+                            feedbackRating.addFeedback(rating);
+                            course.addFeedback(feedbackRating);
+                            JOptionPane.showMessageDialog(null, "Rating added successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Please enter a valid rating between 1 and 5.");
+                        }
+                    } catch (NumberFormatException e) {
+                        JOptionPane.showMessageDialog(null, "Invalid input. Please enter a number.");
+                    }
+                    break;
+
+                case 1: // Add comment
+                    String comment = JOptionPane.showInputDialog("Enter your comment:");
+                    if(comment == null ) return;
+                    if (comment != null && !comment.trim().isEmpty()) {
+                        Feedback<String> feedbackComment = new Feedback<>();
+                        feedbackComment.addFeedback(comment);
+                        course.addFeedback(feedbackComment);
+                        JOptionPane.showMessageDialog(null, "Comment added successfully.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Comment cannot be empty.");
+                    }
+                    break;
+
+                case 2: // Exit
+                    return;
+
+                default:
+                    JOptionPane.showMessageDialog(null, "Invalid choice.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Course not found.");
+        }
     }
 }
